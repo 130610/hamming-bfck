@@ -1,0 +1,116 @@
+RUNNING THE PROGRAM
+
+-to run the program on Linux, use the included interpreter "bfck"
+	% ./bfck hamming.bf
+
+-you will then have to enter the binary data bits of the 16 bit integer,
+ separated by newlines. (sorry, it is painful)
+
+-the output is a binary representation of the hamming code.
+
+
+DESCRIPTION OF THE LANGUAGE AND PROGRAM
+
+This is an implementation of the hamming code generator in a language called
+"brainf*ck." This language was originally created in 1993 by Urban Muller. The
+purpose of the language is to be a turing complete language with the smallest 
+compiler/interpreter possible. There have been compilers in as little as 300 bytes
+in some languages (although the included one, bfck, is much more.)
+
+The model of the language is this: 
+there is a 30,000 element array of integers and there is a pointer to the
+beginning of the array. This pointer can be moved with the '<' and '>' commands.
+The value at the pointer can either be incremented, or decremented by on with
+the '+' and '-'commands. Input and output is handled with the '.' and ','
+commands. If a '.' is read, the ascii representation of the integer at the
+pointer is printed to stdout. If a ',' is encountered, a single ascii character
+is read in, and its integer value is stored at the pointer. Loops can also be
+achieved using the '['and ']' operators. If a '[' is read, the value under the
+pointer is checked. If it is 0, then the program skips to the corresponding ']'
+(nesting is allowed.) If it is any other value, the contained code is executed.
+At the end (the ']')the value under the pointer is checked again to see if the
+program should continue, or go back to the corresponding '['.These are the only
+characters interpreted by the language (the implementation I have is
+interpreted, although I believe there are compiled variations.) All other
+characters are comments (on a side note, at one point in the program, I make an
+extended comment by zeroing a cell, then putting a loop guard that will
+automatically fail. This way I can use the characters that would normally be
+interpreted in the comment without them being executed.) 
+
+This program doesn't define a function "hamming" because there are no function
+definitions in bfck. However, I have created small modules of code that I reused
+many times explicitly to carry out the various tasks in the program. For
+example, I created a mod 2 function, with which, I can simply align the pointer
+and put the appropriate values in the following spaces, and the return value is
+always stored in the 3rd cell of the working space of the function. The function
+doesn't take hexadecimal input because to implement this would have taken more
+time than I was comfortable spending on this, not to mention bfck only accepts
+one character at a time without extensions. The output is also binary because of
+similar concerns. I haven't provided loop invariants, or function definitions,
+because to do so would be to comment every line and operation as these are
+pretty much the only things one can do other than I/O (conditionals are loops
+too, and many processes are only convenient with loops as incrementing
+explicitly can be really slow, or unclear in many cases.)
+
+
+ALGORITHMS USED, AND ALGORITHM NOTATION
+
+In brainf*ck, algorithms can be represented (usually) in a more legible notation.
+
+from the brainf*ck article on the esolang wiki
+( http://esolangs.org/wiki/brainf*ck_algorithms ):
+
+	In the interest of generality, the algorithms will use variable names
+	in place of the < and > instructions. Temporary cells are denoted
+	"temp". When using an algorithm in a program, replace the variable
+	names with the correct number of < or > instructions to position the
+	pointer at the desired memory cell.
+
+	Example:
+	If "a" is designated to be cell 1, "b" is cell 4, and the pointer is
+	currently at cell 0, then:
+		a[b+a-]
+	
+	becomes:
+		>[>>>+<<<-]
+
+The main algorithms used in my program are to count the set bits, and to find
+mod 2. The count bits algorithm is:
+	temp0[-]		(this initializes a temporary variable to 0)
+	b[temp0+b-]		(this moves the value in b (data bit) to temp0)
+	temp0[c+b+temp0-]	(this adds the value in temp0 to both the the counter cell 'c' and back to the data bit 'b')
+
+this effectively counts the set bits if it is called for all of the data bits
+that need to be checked by the current parity bit.
+
+The other algorithm I used was to calculate mod 2, and as far as I know, this
+can't be represented with this notation, because it relies on a shift that
+could either go to a null cell to break a loop, or a cell which contains data
+depending on the result of a previous loop guard.
+
+
+ADDITIONAL NOTES
+I've read a lot about this language, and learned about various programming
+techniques that come with it. It isn't really a very useful language except as a
+toy. Some have used it to prove that their language is Turing complete by
+writing a new compiler (there are dozens of brainf*ck compilers, of which bfck
+is only one.) One particularly useful compiler I found was this one:
+
+http://esoteric.sange.fi/brainf*ck/impl/interp/i.html
+
+This is an online compiler that can dump the position and value at any point in
+the program if it is in debug mode, and it reads a '#' character. In this
+interpreter, one can also enter the number without putting in newlines. I've
+tested this program with the example from this page:
+
+http://stolaf.edu/people/rab/hd/hamming.htm
+
+if one enters (with the appropriate format for the interpreter)
+	0110101011000010
+it returns
+	010111001010110100010
+which is correct.
+
+I don't know if this would count for extra credit, because brainf*ck isn't one
+of the languages for our class (thank goodness!), but I thought I'd share my
+work, since it has been so interesting to work on.
